@@ -109,8 +109,9 @@ const handleErrors = async (response: Response): Promise<any> => {
     if (response.status === 401) {
       const isLoginPage = typeof window !== "undefined" && window.location.pathname === "/";
       const isLoginRequest = response.url.includes("validateAdminLogin");
-      
-      if (!isLoginPage && !isLoginRequest) {
+      const isManagerSession = typeof window !== "undefined" && sessionStorage.getItem("isManager") === "true";
+
+      if (!isLoginPage && !isLoginRequest && !isManagerSession) {
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("admin");
         sessionStorage.removeItem("key");
@@ -118,7 +119,7 @@ const handleErrors = async (response: Response): Promise<any> => {
         window.location.href = "/";
       }
     }
-    
+
     return Promise.reject(data);
   }
 
@@ -135,15 +136,15 @@ const getUidData = (): string | null => {
 const getHeaders = (isFormData = false): { [key: string]: string } => {
   const token = getTokenData();
   const uid = getUidData();
-  
+
   let headers: { [key: string]: string } = {
     key,
   };
-  
+
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
-  
+
   if (uid) {
     headers["x-admin-uid"] = uid;
   }

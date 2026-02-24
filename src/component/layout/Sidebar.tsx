@@ -35,7 +35,12 @@ const Sidebar = () => {
   const router = useRouter();
   const nextRouter = nextUseRouter();
   const [showDialog, setShowDialog] = useState(false);
-  const { currentRole: role } = useSelector((state: RootStore) => state?.admin);
+  const { currentRole: roleFromStore } = useSelector((state: RootStore) => state?.admin);
+
+  // Hydrate from sessionStorage on page refresh (manager sessions don't persist in Redux)
+  const role =
+    roleFromStore ??
+    (typeof window !== "undefined" ? sessionStorage.getItem("currentRole") : null);
 
   const handleLogout = () => {
     setShowDialog(true);
@@ -50,6 +55,10 @@ const Sidebar = () => {
     sessionStorage.removeItem("admin");
     sessionStorage.removeItem("key");
     sessionStorage.removeItem("isAuth");
+    sessionStorage.removeItem("isManager");
+    sessionStorage.removeItem("currentRole");
+    sessionStorage.removeItem("admin_");
+    localStorage.removeItem("persist:admin");
     sessionStorage.setItem("isAgency", "false");
     setTimeout(() => {
       router.push("/");
@@ -101,7 +110,7 @@ const Sidebar = () => {
     },
     {
       name: "Manager",
-      path: "/Manager",
+      path: "/User/Manager",
       path4: "/User/UserInfoPage",
       path2: "/User/CoinPlanHistoryPage",
       path3: "/PurchaseCoinPlanHistory",
@@ -119,7 +128,35 @@ const Sidebar = () => {
     },
     {
       name: "Reseller",
-      path: "/Reseller",
+      path: "/User/Reseller",
+      path4: "/User/UserInfoPage",
+      path2: "/User/CoinPlanHistoryPage",
+      path3: "/PurchaseCoinPlanHistory",
+      navSVG: <User />,
+      onClick: handleOnClick,
+    },
+  ];
+
+  const managerMenu = [
+    {
+      name: "Dashboard",
+      path: "/dashboard",
+      navSVG: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          fill="currentColor"
+          className="bi bi-border-all"
+          viewBox="0 0 16 16"
+        >
+          <path d="M0 0h16v16H0zm1 1v6.5h6.5V1zm7.5 0v6.5H15V1zM15 8.5H8.5V15H15zM7.5 15V8.5H1V15z" />
+        </svg>
+      ),
+    },
+    {
+      name: "Admin",
+      path: "/User/Admin",
       path4: "/User/UserInfoPage",
       path2: "/User/CoinPlanHistoryPage",
       path3: "/PurchaseCoinPlanHistory",
@@ -317,7 +354,7 @@ const Sidebar = () => {
                 className={`mainMenu webMenu`}
                 style={{ padding: "10px 0.75rem" }}
               >
-                {role !== 'admin' && genralMenu.map((res: any, i: any) => {
+                {role !== 'admin' && role !== 'manager' && genralMenu.map((res: any, i: any) => {
                   return (
                     <React.Fragment key={`general-${i}`}>
                       <Navigator
@@ -350,11 +387,9 @@ const Sidebar = () => {
                   );
                 })}
 
-                <p className="navTitle">Host & Agency</p>
-
-                {hostAndAgency.map((res: any, i: any) => {
+                {role === 'manager' && managerMenu.map((res: any, i: any) => {
                   return (
-                    <React.Fragment key={`host-${i}`}>
+                    <React.Fragment key={`general-${i}`}>
                       <Navigator
                         name={res?.name}
                         path={res?.path}
@@ -385,7 +420,49 @@ const Sidebar = () => {
                   );
                 })}
 
-                {role !== 'admin' && (<>
+                {
+                  role === 'admin' || role === 'manager' && (
+                    <>
+                      <p className="navTitle">Host & Agency</p>
+
+                      {hostAndAgency.map((res: any, i: any) => {
+                        return (
+                          <React.Fragment key={`host-${i}`}>
+                            <Navigator
+                              name={res?.name}
+                              path={res?.path}
+                              path2={res?.path2}
+                              path3={res?.path3}
+                              path4={res?.path4}
+                              navIcon={res?.navIcon}
+                              navSVG={res?.navSVG}
+                              onClick={res?.onClick && res?.onClick}
+                            >
+                              {res?.subMenu && (
+                                <ul className={`subMenu`}>
+                                  <span className="subhead">{res?.name}</span>
+                                  {res?.subMenu?.map((subMenu: any) => {
+                                    return (
+                                      <Navigator
+                                        name={subMenu.subName}
+                                        path={subMenu.subPath}
+                                        onClick={subMenu.onClick}
+                                        key={subMenu.subPath}
+                                      />
+                                    );
+                                  })}
+                                </ul>
+                              )}
+                            </Navigator>
+                          </React.Fragment>
+                        );
+                      })}
+
+                    </>
+                  )
+                }
+
+                {role !== 'admin' && role !== 'manager' && (<>
                   <p className="navTitle">Gift & Rewards</p>
 
                   {giftAndRewards.map((res: any, i: any) => {

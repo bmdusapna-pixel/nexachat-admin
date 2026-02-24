@@ -6,6 +6,7 @@ import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 interface UserState {
   admins: any[];
   user: any[];
+  managers: any[];
   userCoinHistory: any[];
   userCallHistory: any[];
   userGiftHistory: any[];
@@ -30,6 +31,7 @@ interface UserState {
 const initialState: UserState = {
   admins: [],
   user: [],
+  managers: [],
   total: 0,
   totalCallHistory: 0,
   totalUserGiftHistory: 0,
@@ -114,6 +116,46 @@ export const deleteAdminUser: any = createAsyncThunk(
   async (id: string) => {
     return apiInstanceFetch.delete(
       `api/admin/sub-admin/delete/${id}`
+    );
+  }
+);
+
+// Admin User
+export const getManagerUser: any = createAsyncThunk(
+  "api/admin/manager/getList",
+  async (payload: AdminUsersPayload | undefined) => {
+    return apiInstanceFetch.get(
+      `api/admin/manager/getList`
+    )
+  }
+)
+
+export const createManagerUser: any = createAsyncThunk(
+  "api/admin/manager/createManager",
+  async (payload) => {
+    return apiInstanceFetch.post(
+      `api/admin/manager/createManager`,
+      payload
+    );
+  }
+);
+
+export const updateManagerUser: any = createAsyncThunk(
+  "api/admin/manager/updatePasswordById",
+  async ({ data, id }: any) => {
+    return apiInstanceFetch.put(
+      `api/admin/manager/updateManager/${id}`,
+      data
+    );
+  }
+);
+
+
+export const deleteManagerUser: any = createAsyncThunk(
+  "api/admin/manager/deleteManager",
+  async (id: string) => {
+    return apiInstanceFetch.delete(
+      `api/admin/manager/deleteManager/${id}`
     );
   }
 );
@@ -232,9 +274,9 @@ export const updateUserCoin = createAsyncThunk(
         historyType,
       };
 
-  
+
       const res = await apiInstanceFetch.patch(`api/admin/user/updateUserCoin`, body);
-    
+
       if (res.status) {
         setToast("success", `Coins ${type === "add" ? "added" : "deducted"} successfully`);
       } else {
@@ -268,6 +310,11 @@ const userSlice = createSlice({
     );
     builder.addCase(getAdminUser.rejected, (state) => {
       state.isSkeleton = false;
+    });
+
+    builder.addCase(getManagerUser.fulfilled, (state, action) => {
+      console.log("MANAGER API RESPONSE:", action.payload.managers);
+      state.managers = action.payload.managers;
     });
 
     builder.addCase(
@@ -339,7 +386,7 @@ const userSlice = createSlice({
     });
 
 
-    
+
     builder.addCase(getRealOrFakeUser.pending, (state, action: PayloadAction<any>) => {
       state.isSkeleton = true;
     });

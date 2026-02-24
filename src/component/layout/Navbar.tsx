@@ -59,6 +59,10 @@ const Navbar = () => {
     sessionStorage.removeItem("admin");
     sessionStorage.removeItem("key");
     sessionStorage.removeItem("isAuth");
+    sessionStorage.removeItem("isManager");
+    sessionStorage.removeItem("currentRole");
+    sessionStorage.removeItem("admin_");
+    localStorage.removeItem("persist:admin");
     dispatch(logoutApi());
     toast.success("Logout successful");
     setTimeout(() => {

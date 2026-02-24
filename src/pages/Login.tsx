@@ -175,6 +175,16 @@ export default function Login() {
                   {loginLoading ? "Loading..." : "Log In"}
                 </button>
               </div>
+
+              <p style={{ textAlign: "center", marginTop: "16px", fontSize: "13px", color: "#666" }}>
+                Are you a Manager?{" "}
+                <a
+                  href="/ManagerLogin"
+                  style={{ color: "#8F6DFF", textDecoration: "underline", cursor: "pointer" }}
+                >
+                  Manager Login
+                </a>
+              </p>
             </form>
           </div>
         </div>

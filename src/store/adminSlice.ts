@@ -73,6 +73,14 @@ export const login = createAsyncThunk(
   }
 );
 
+export const loginManager = createAsyncThunk(
+  "api/admin/manager/validateManagerLogin",
+  async (payload: any) => {
+    return apiInstanceFetch.post("api/admin/manager/validateManagerLogin", payload);
+  }
+);
+
+
 export const sendEmailandForgotPassword = createAsyncThunk(
   "api/admin/admin/sendPasswordResetRequest",
   async (email: any) => {
@@ -144,9 +152,17 @@ const adminSlice = createSlice({
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("admin");
       sessionStorage.removeItem("key");
+      sessionStorage.removeItem("isAuth");
+      sessionStorage.removeItem("isManager");
+      sessionStorage.removeItem("currentRole");
+      sessionStorage.removeItem("admin_");
+      // Clear persisted Redux state so next login starts fresh
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("persist:admin");
+      }
       state.admin = {};
       state.isAuth = false;
-
+      state.currentRole = null;
     },
     setLoading: (state, action) => {
       state.isLoading = action.payload
@@ -212,6 +228,51 @@ const adminSlice = createSlice({
         }
       }
     );
+
+    // ── Manager Login ──────────────────────────────────────────────
+    builder.addCase(loginManager.pending, (state: any) => {
+      state.isLoading = true;
+    });
+    builder.addCase(loginManager.fulfilled, (state: any, action: any) => {
+      state.isLoading = false;
+      if (action.payload?.status === true) {
+        const manager = action.payload.manager;
+        setToast("success", "Login Successfully");
+
+        state.isAuth = true;
+        state.currentRole = "manager";
+        state.admin = manager;
+
+        sessionStorage.setItem("isAuth", "true");
+        sessionStorage.setItem("isManager", "true");
+        sessionStorage.setItem("currentRole", "manager");
+        sessionStorage.setItem("admin_", JSON.stringify(manager));
+        SetDevKey(key);
+
+        // ── Directly write manager state to localStorage persist key ──
+        // This ensures PersistGate rehydrates manager data (not stale admin
+        // data) when the page reloads after window.location.href redirect.
+        if (typeof window !== "undefined") {
+          const persistPayload = {
+            isAuth: JSON.stringify(true),
+            admin: JSON.stringify(manager),
+            currentRole: JSON.stringify("manager"),
+            _persist: JSON.stringify({ version: -1, rehydrated: true }),
+          };
+          localStorage.setItem("persist:admin", JSON.stringify(persistPayload));
+        }
+
+        setTimeout(() => { window.location.href = "/dashboard"; }, 500);
+      } else {
+        DangerRight(action.payload?.message || "Login failed.");
+      }
+    });
+    builder.addCase(loginManager.rejected, (state: any) => {
+      state.isLoading = false;
+      setToast("error", "Manager login failed.");
+    });
+    // ──────────────────────────────────────────────────────────────
+
     builder.addCase(
       login.rejected,
       (state: any, action: PayloadAction<any>) => {

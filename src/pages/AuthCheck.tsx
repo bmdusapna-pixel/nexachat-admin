@@ -8,7 +8,7 @@ interface AuthCheckProps {
 }
 
 // Public routes that don't require authentication
-const publicRoutes = ["/", "/Registration", "/ForgotPassword"];
+const publicRoutes = ["/", "/Registration", "/ForgotPassword", "/ManagerLogin"];
 
 const AuthCheck: React.FC<AuthCheckProps> = (props) => {
   const router = useRouter();
@@ -22,28 +22,29 @@ const AuthCheck: React.FC<AuthCheckProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    // Don't redirect until hydration is complete
     if (!isHydrated) return;
 
     const isPublicRoute = publicRoutes.includes(router.pathname);
 
-    // Check sessionStorage for token
+    // Valid session = Firebase token (admin) OR isManager flag (manager)
     const hasToken = typeof window !== "undefined" && sessionStorage.getItem("token");
-    
-    // If redux says authenticated but no token exists, clear the stale auth state
-    if (isAuth && !hasToken && !isPublicRoute) {
+    const isManager = typeof window !== "undefined" && sessionStorage.getItem("isManager") === "true";
+    const hasSession = !!(hasToken || isManager);
+
+    // Clear stale redux auth if no session exists
+    if (isAuth && !hasSession && !isPublicRoute) {
       dispatch(logoutApi());
       router.push("/");
       return;
     }
 
-    // If not authenticated and not on public route, redirect to login
-    if (!isAuth && !hasToken && !isPublicRoute) {
+    // Guard protected routes
+    if (!isAuth && !hasSession && !isPublicRoute) {
       router.push("/");
     }
 
-    // If authenticated (has token) and on login page, redirect to dashboard
-    if (hasToken && router.pathname === "/") {
+    // Redirect authenticated users away from public routes to dashboard
+    if (hasSession && isPublicRoute) {
       router.push("/dashboard");
     }
   }, [isAuth, router, isHydrated, dispatch]);

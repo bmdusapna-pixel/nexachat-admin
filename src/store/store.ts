@@ -45,7 +45,7 @@ const storage = typeof window !== 'undefined'
 const adminPersistConfig = {
   key: 'admin',
   storage,
-  whitelist: ['isAuth'], // only persist isAuth
+  whitelist: ['isAuth', 'admin', 'currentRole'], // persist auth state, user data, and role
 };
 
 const persistedAdminReducer = persistReducer(adminPersistConfig, adminSlice);

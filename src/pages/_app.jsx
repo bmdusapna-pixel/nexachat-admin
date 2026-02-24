@@ -22,7 +22,7 @@ axios.interceptors.request.use(
   (config) => {
     const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
     const uid = typeof window !== "undefined" ? sessionStorage.getItem("uid") : null;
-    
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -40,11 +40,13 @@ axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Don't redirect if already on login page or during login request
       const isLoginPage = typeof window !== "undefined" && window.location.pathname === "/";
       const isLoginRequest = error.config?.url?.includes("validateAdminLogin");
-      
-      if (!isLoginPage && !isLoginRequest) {
+      // Skip session wipe for manager sessions — admin-only endpoints always
+      // return 401 for managers, but their session is valid via isManager flag
+      const isManagerSession = typeof window !== "undefined" && sessionStorage.getItem("isManager") === "true";
+
+      if (!isLoginPage && !isLoginRequest && !isManagerSession) {
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("uid");
         sessionStorage.removeItem("admin");
