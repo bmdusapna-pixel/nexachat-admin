@@ -420,47 +420,41 @@ const Sidebar = () => {
                   );
                 })}
 
-                {
-                  role === 'admin' || role === 'manager' && (
-                    <>
-                      <p className="navTitle">Host & Agency</p>
+                <p className="navTitle">Host & Agency</p>
 
-                      {hostAndAgency.map((res: any, i: any) => {
-                        return (
-                          <React.Fragment key={`host-${i}`}>
-                            <Navigator
-                              name={res?.name}
-                              path={res?.path}
-                              path2={res?.path2}
-                              path3={res?.path3}
-                              path4={res?.path4}
-                              navIcon={res?.navIcon}
-                              navSVG={res?.navSVG}
-                              onClick={res?.onClick && res?.onClick}
-                            >
-                              {res?.subMenu && (
-                                <ul className={`subMenu`}>
-                                  <span className="subhead">{res?.name}</span>
-                                  {res?.subMenu?.map((subMenu: any) => {
-                                    return (
-                                      <Navigator
-                                        name={subMenu.subName}
-                                        path={subMenu.subPath}
-                                        onClick={subMenu.onClick}
-                                        key={subMenu.subPath}
-                                      />
-                                    );
-                                  })}
-                                </ul>
-                              )}
-                            </Navigator>
-                          </React.Fragment>
-                        );
-                      })}
+                {hostAndAgency.map((res: any, i: any) => {
+                  return (
+                    <React.Fragment key={`host-${i}`}>
+                      <Navigator
+                        name={res?.name}
+                        path={res?.path}
+                        path2={res?.path2}
+                        path3={res?.path3}
+                        path4={res?.path4}
+                        navIcon={res?.navIcon}
+                        navSVG={res?.navSVG}
+                        onClick={res?.onClick && res?.onClick}
+                      >
+                        {res?.subMenu && (
+                          <ul className={`subMenu`}>
+                            <span className="subhead">{res?.name}</span>
+                            {res?.subMenu?.map((subMenu: any) => {
+                              return (
+                                <Navigator
+                                  name={subMenu.subName}
+                                  path={subMenu.subPath}
+                                  onClick={subMenu.onClick}
+                                  key={subMenu.subPath}
+                                />
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </Navigator>
+                    </React.Fragment>
+                  );
+                })}
 
-                    </>
-                  )
-                }
 
                 {role !== 'admin' && role !== 'manager' && (<>
                   <p className="navTitle">Gift & Rewards</p>

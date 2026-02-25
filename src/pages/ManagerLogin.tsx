@@ -31,22 +31,19 @@ export default function ManagerLogin() {
     const [loginLoading, setLoginLoading] = useState<boolean>(false);
     const [error, setError] = useState({ email: "", password: "" });
 
-    // Redirect if already authenticated
+    // Redirect if already authenticated as manager
     useEffect(() => {
-        const hasToken = sessionStorage.getItem("token");
         const isManager = sessionStorage.getItem("isManager") === "true";
-        if (hasToken || isManager) {
+        if (isManager) {
             router.push("/dashboard");
         }
     }, [isAuth, router]);
 
-    const loginUser = async (email: string, password: string) => {
+    const loginFirebase = async (email: string, password: string) => {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const token = await userCredential.user.getIdToken(true);
             const uid = userCredential.user.uid;
-            console.log("User ID:", uid);
-            console.log("Token:", token);
             sessionStorage.setItem("token", token);
             sessionStorage.setItem("uid", uid);
             return token;
@@ -69,11 +66,11 @@ export default function ManagerLogin() {
             return setError(errorObj);
         }
 
-        // Step 1: Firebase auth (manager is created in Firebase)
-        const token = await loginUser(email, password);
+        // Step 1: Firebase auth
+        const token = await loginFirebase(email, password);
 
         if (token) {
-            // Step 2: Validate against Manager collection directly
+            // Step 2: Validate against Admin collection with role=manager
             dispatch(loginManager({ email, password }));
         }
 

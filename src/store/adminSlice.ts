@@ -209,16 +209,20 @@ const adminSlice = createSlice({
         if (action.payload && action?.payload?.status !== false) {
           const token: any = sessionStorage.getItem("token");
           setToast("success", "Login Successfully");
-          // const token = action.payload.data.data;
           const decodedToken: any = jwtDecode(token);
 
+          // Merge role from server response into state
+          const adminData = action.payload?.admin || {};
+          const role = adminData.role || "admin";
 
           state.isAuth = true;
-          sessionStorage.setItem("isAuth", state.isAuth);
-          state.admin = decodedToken;
+          sessionStorage.setItem("isAuth", "true");
+          state.admin = { ...decodedToken, ...adminData };
+          state.currentRole = role;
+          sessionStorage.setItem("currentRole", role);
+          sessionStorage.setItem("admin_", JSON.stringify({ ...decodedToken, ...adminData }));
           setToken(action.payload.data);
           SetDevKey(key);
-          sessionStorage.setItem("admin_", JSON.stringify(decodedToken));
           setTimeout(() => {
             window.location.href = "/dashboard";
           }, 500)
@@ -236,7 +240,7 @@ const adminSlice = createSlice({
     builder.addCase(loginManager.fulfilled, (state: any, action: any) => {
       state.isLoading = false;
       if (action.payload?.status === true) {
-        const manager = action.payload.manager;
+        const manager = action.payload.admin;
         setToast("success", "Login Successfully");
 
         state.isAuth = true;
@@ -249,9 +253,6 @@ const adminSlice = createSlice({
         sessionStorage.setItem("admin_", JSON.stringify(manager));
         SetDevKey(key);
 
-        // ── Directly write manager state to localStorage persist key ──
-        // This ensures PersistGate rehydrates manager data (not stale admin
-        // data) when the page reloads after window.location.href redirect.
         if (typeof window !== "undefined") {
           const persistPayload = {
             isAuth: JSON.stringify(true),

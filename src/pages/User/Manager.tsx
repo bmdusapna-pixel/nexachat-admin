@@ -4,7 +4,6 @@ import image from "@/assets/images/user.png";
 import { RootStore } from "@/store/store";
 import { useDispatch, useSelector } from "react-redux";
 import { openDialog } from "@/store/dialogSlice";
-import AdminFormDialog from "@/component/user/AdminFormDialog";
 import { useEffect, useState } from "react";
 import { deleteManagerUser, getManagerUser } from "@/store/userSlice";
 import Pagination from "@/extra/Pagination";
@@ -12,6 +11,7 @@ import edit from "@/assets/images/edit.svg";
 import deleteIcon from "@/assets/images/delete.svg";
 import UserShimmer from "@/component/Shimmer/UserShimmer";
 import Table from "@/extra/Table";
+import ManagerDialog from "@/component/manager/ManagerDialog";
 
 const Manager = (props: any) => {
     const { dialogue, dialogueType } = useSelector(
@@ -29,9 +29,6 @@ const Manager = (props: any) => {
         dispatch(getManagerUser(payload));
     }, [dispatch]);
 
-    const handleEdit = (row: any) => {
-        dispatch(openDialog({ type: "admin-form", data: row }));
-    };
 
     const handleDelete = (row: any) => {
         dispatch(deleteManagerUser(row._id))
@@ -57,9 +54,9 @@ const Manager = (props: any) => {
             ),
         },
         {
-            Header: "Role",
+            Header: "Country",
             Cell: ({ row }: { row: any }) => (
-                <span className="text-capitalize fw-normal">{row?.role || "-"}</span>
+                <span className="text-capitalize fw-normal">{row?.country || "-"}</span>
             ),
         },
         {
@@ -86,7 +83,9 @@ const Manager = (props: any) => {
                             borderRadius: "10px",
                             padding: "8px",
                         }}
-                        onClick={() => handleEdit(row)}
+                        onClick={() => {
+                            dispatch(openDialog({ type: "manager-form", data: row }));
+                        }}
                     >
                         <img
                             src={edit.src}
@@ -131,11 +130,11 @@ const Manager = (props: any) => {
                 bIcon={image}
                 text="Create Manager"
                 onClick={() => {
-                    dispatch(openDialog({ type: "admin-form", data: null }));
+                    dispatch(openDialog({ type: "manager-form", data: null }));
                 }}
             />
 
-            {dialogueType === "admin-form" && <AdminFormDialog />}
+            {dialogueType === "manager-form" && <ManagerDialog />}
 
             <div className="">
                 <Table

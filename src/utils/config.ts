@@ -1,5 +1,5 @@
-export const baseURL: string = "https://api.nexachats.com/";
-// export const baseURL: string = "http://localhost:8000/";
+// export const baseURL: string = "https://api.nexachats.com/";
+export const baseURL: string = "http://localhost:8000/";
 
 export const key: string = "8567fghyfcytyt&*^&";
 export const projectName: string = "NexaChat";

@@ -144,7 +144,7 @@ export const updateManagerUser: any = createAsyncThunk(
   "api/admin/manager/updatePasswordById",
   async ({ data, id }: any) => {
     return apiInstanceFetch.put(
-      `api/admin/manager/updateManager/${id}`,
+      `api/admin/manager/updatePasswordById/${id}`,
       data
     );
   }
@@ -313,8 +313,61 @@ const userSlice = createSlice({
     });
 
     builder.addCase(getManagerUser.fulfilled, (state, action) => {
-      console.log("MANAGER API RESPONSE:", action.payload.managers);
       state.managers = action.payload.managers;
+    });
+
+    builder.addCase(createManagerUser.pending, (state) => {
+      state.isLoading = true;
+    });
+    builder.addCase(createManagerUser.fulfilled, (state, action: PayloadAction<any>) => {
+      state.isLoading = false;
+      if (action.payload.status) {
+        state.managers.unshift(action.payload.data);
+        Success("Manager created successfully");
+      } else {
+        DangerRight(action.payload?.message);
+      }
+    });
+    builder.addCase(createManagerUser.rejected, (state) => {
+      state.isLoading = false;
+      DangerRight("Failed to create manager");
+    });
+
+    builder.addCase(updateManagerUser.pending, (state) => {
+      state.isLoading = true;
+    });
+    builder.addCase(updateManagerUser.fulfilled, (state, action: any) => {
+      state.isLoading = false;
+      if (action.payload.status) {
+        const idx = state.managers.findIndex((m) => m._id === action.meta.arg.id);
+        if (idx !== -1 && action.payload.manager) {
+          state.managers[idx] = { ...state.managers[idx], ...action.payload.manager };
+        }
+        Success("Manager updated successfully");
+      } else {
+        DangerRight(action.payload?.message);
+      }
+    });
+    builder.addCase(updateManagerUser.rejected, (state) => {
+      state.isLoading = false;
+      DangerRight("Failed to update manager");
+    });
+
+    builder.addCase(deleteManagerUser.pending, (state) => {
+      state.isLoading = true;
+    });
+    builder.addCase(deleteManagerUser.fulfilled, (state, action: any) => {
+      state.isLoading = false;
+      if (action.payload.status) {
+        state.managers = state.managers.filter((m) => m._id !== action.meta.arg);
+        Success("Manager deleted successfully");
+      } else {
+        DangerRight(action.payload?.message);
+      }
+    });
+    builder.addCase(deleteManagerUser.rejected, (state) => {
+      state.isLoading = false;
+      DangerRight("Failed to delete manager");
     });
 
     builder.addCase(
